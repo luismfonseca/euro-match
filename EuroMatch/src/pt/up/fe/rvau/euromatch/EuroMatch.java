@@ -37,9 +37,6 @@ import pt.up.fe.rvau.euromatch.jutils.VisualHelper;
  * @author luiscubal
  */
 public class EuroMatch {
-
-    private static final String BASE_LIBRARY_PATH = "C:\\Users\\luiscubal\\Downloads\\opencv\\build\\java\\x64\\";
-    
     static {
         System.loadLibrary("opencv_java247");
     }
@@ -50,7 +47,7 @@ public class EuroMatch {
     public static void main(String[] args) {
         System.out.println("Starting");
         
-        Mat object = Highgui.imread("50eu_r.jpg", Highgui.CV_LOAD_IMAGE_COLOR);
+        Mat object = Highgui.imread("10eu_r.jpg", Highgui.CV_LOAD_IMAGE_COLOR);
         Mat scene = Highgui.imread("scene.png", Highgui.CV_LOAD_IMAGE_COLOR);
         
         FeatureDetector featureDetector = FeatureDetector.create(FeatureDetector.SURF);
@@ -73,7 +70,7 @@ public class EuroMatch {
         MatOfDMatch matches = new MatOfDMatch();
         matcher.match(objectDescriptor, sceneDescriptor, matches);
         List<DMatch> matchesList = matches.toList();
-        
+
         float maxDistance = 0;
         float minDistance = 100;
         for (int i = 0; i < objectDescriptor.rows(); ++i) {
@@ -116,17 +113,9 @@ public class EuroMatch {
         cornersInObject.add(new Point(0, object.rows()));
         Mat cornersInObjectMat = MatConverter.convertToMatOfType(cornersInObject, CvType.CV_32FC2);
         
-        System.out.println(cornersInObjectMat.get(2, 0).length);
-        System.out.println(cornersInObjectMat.get(2, 0)[0]);
-        System.out.println(cornersInObjectMat.get(2, 0)[1]);
-        
         Mat cornersInSceneMat = new Mat(4, 1, CvType.CV_32FC2);
         Core.perspectiveTransform(cornersInObjectMat, cornersInSceneMat, homography);
         List<Point> cornersInScene = MatConverter.toPointList(cornersInSceneMat);
-       
-        System.out.println(cornersInScene.get(0));
-        System.out.println(cornersInScene.get(1));
-        System.out.println(cornersInScene.get(2));
         
         Core.line(
                 imageWithMatches,
