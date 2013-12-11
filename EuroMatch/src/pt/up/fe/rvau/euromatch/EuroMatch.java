@@ -6,18 +6,30 @@
 
 package pt.up.fe.rvau.euromatch;
 
+import pt.up.fe.rvau.euromatch.jutils.PointUtils;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import org.opencv.calib3d.Calib3d;
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfDMatch;
 import org.opencv.core.MatOfKeyPoint;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
+import org.opencv.core.Scalar;
 import org.opencv.features2d.DMatch;
 import org.opencv.features2d.DescriptorExtractor;
 import org.opencv.features2d.DescriptorMatcher;
 import org.opencv.features2d.FeatureDetector;
+import org.opencv.features2d.Features2d;
+import org.opencv.features2d.KeyPoint;
 import org.opencv.highgui.Highgui;
 import pt.up.fe.rvau.euromatch.jutils.ImageConverter;
+import pt.up.fe.rvau.euromatch.jutils.MatConverter;
 import pt.up.fe.rvau.euromatch.jutils.VisualHelper;
 
 /**
@@ -45,8 +57,10 @@ public class EuroMatch {
         
         MatOfKeyPoint objectKeypoints = new MatOfKeyPoint();
         featureDetector.detect(object, objectKeypoints);
+        List<KeyPoint> objectKeypointsList = objectKeypoints.toList();
         MatOfKeyPoint sceneKeypoints = new MatOfKeyPoint();
         featureDetector.detect(scene, sceneKeypoints);
+        List<KeyPoint> sceneKeypointsList = sceneKeypoints.toList();
         
         DescriptorExtractor extractor = DescriptorExtractor.create(DescriptorExtractor.SURF);
         
@@ -71,8 +85,76 @@ public class EuroMatch {
         System.out.println("Min: " + minDistance);
         System.out.println("Max: " + maxDistance);
         
+        List<DMatch> goodMatches = new ArrayList<>();
+        for (DMatch match : matchesList) {
+            if (match.distance < 3 * minDistance) {
+                goodMatches.add(match);
+            }
+        }
+        MatOfDMatch goodMatchesMat = MatConverter.convert(goodMatches);
+        
+        Mat imageWithMatches = new Mat();
+        Features2d.drawMatches(object, objectKeypoints, scene, sceneKeypoints,
+                goodMatchesMat, imageWithMatches, Scalar.all(-1), Scalar.all(-1),
+                new MatOfByte(), Features2d.NOT_DRAW_SINGLE_POINTS);
+        
+        
+        List<Point> objPoints = new ArrayList<>();
+        List<Point> scenePoints = new ArrayList<>();
+        for (DMatch goodMatch : goodMatches) {
+            objPoints.add(objectKeypointsList.get(goodMatch.queryIdx).pt);
+            scenePoints.add(sceneKeypointsList.get(goodMatch.trainIdx).pt);
+        }
+        MatOfPoint2f objPointsMat = MatConverter.convertToMatOfPoint2f(objPoints);
+        MatOfPoint2f scenePointsMat = MatConverter.convertToMatOfPoint2f(scenePoints);
+        
+        Mat homography = Calib3d.findHomography(objPointsMat, scenePointsMat, Calib3d.RANSAC, 3);
+        List<Point> cornersInObject = new ArrayList<>();
+        cornersInObject.add(new Point(0, 0));
+        cornersInObject.add(new Point(object.cols(), 0));
+        cornersInObject.add(new Point(object.cols(), object.rows()));
+        cornersInObject.add(new Point(0, object.rows()));
+        Mat cornersInObjectMat = MatConverter.convertToMatOfType(cornersInObject, CvType.CV_32FC2);
+        
+        System.out.println(cornersInObjectMat.get(2, 0).length);
+        System.out.println(cornersInObjectMat.get(2, 0)[0]);
+        System.out.println(cornersInObjectMat.get(2, 0)[1]);
+        
+        Mat cornersInSceneMat = new Mat(4, 1, CvType.CV_32FC2);
+        Core.perspectiveTransform(cornersInObjectMat, cornersInSceneMat, homography);
+        List<Point> cornersInScene = MatConverter.toPointList(cornersInSceneMat);
+       
+        System.out.println(cornersInScene.get(0));
+        System.out.println(cornersInScene.get(1));
+        System.out.println(cornersInScene.get(2));
+        
+        Core.line(
+                imageWithMatches,
+                PointUtils.add(cornersInScene.get(0), new Point(object.cols(), 0)),
+                PointUtils.add(cornersInScene.get(1), new Point(object.cols(), 0)),
+                new Scalar(0, 0, 255),
+                4);
+        Core.line(
+                imageWithMatches,
+                PointUtils.add(cornersInScene.get(1), new Point(object.cols(), 0)),
+                PointUtils.add(cornersInScene.get(2), new Point(object.cols(), 0)),
+                new Scalar(0, 255, 0),
+                4);
+        Core.line(
+                imageWithMatches,
+                PointUtils.add(cornersInScene.get(2), new Point(object.cols(), 0)),
+                PointUtils.add(cornersInScene.get(3), new Point(object.cols(), 0)),
+                new Scalar(255, 0, 255),
+                4);
+        Core.line(
+                imageWithMatches,
+                PointUtils.add(cornersInScene.get(3), new Point(object.cols(), 0)),
+                PointUtils.add(cornersInScene.get(0), new Point(object.cols(), 0)),
+                new Scalar(255, 0, 0),
+                4);
+        
         try {
-            VisualHelper.showImageFrame(ImageConverter.convert(object, 640, 480));
+            VisualHelper.showImageFrame(ImageConverter.convert(imageWithMatches, 640, 480));
         } catch (IOException e) {
             e.printStackTrace();
         }
