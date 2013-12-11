@@ -1,5 +1,7 @@
 *.class
 
+EuroMatch/build/*
+
 # Package Files #
 *.jar
 *.war
