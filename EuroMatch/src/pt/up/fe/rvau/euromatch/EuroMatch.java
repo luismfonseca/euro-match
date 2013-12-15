@@ -100,9 +100,13 @@ public class EuroMatch {
 							3, 113, 77, 141,
 							0, 0, 90, 64,
 							230, 0, 260, 30}));
-		//billInfo.add(loadBill(featureDetector, extractor, "50eu_r.jpg", 50,
-		//		new int[] {}));
-		//billInfo.add(loadBill(featureDetector, extractor, "50eu_v.jpg", 50));
+		billInfo.add(loadBill(featureDetector, extractor, "50eu_r.jpg", 50,
+				new int[] { 222, 78, 258, 116,
+							164, 4, 230, 55,
+							0, 113, 77, 141}));
+		billInfo.add(loadBill(featureDetector, extractor, "50eu_v.jpg", 50,
+				new int[] { 214, 107, 260, 145,
+							0, 114, 85, 146}));
 		return billInfo;
 	}
 	
@@ -289,6 +293,7 @@ public class EuroMatch {
 			case 4: return new Scalar(255, 0, 255); //Magenta
 			case 5: return new Scalar(0, 255, 255); //Yellow
 			case 6: return new Scalar(255, 128, 0); //Cyan-ish blue
+			case 7: return new Scalar(0, 128, 255); //Orange
 			default: return new Scalar(255, 255, 255); //White
 		}
 	}
