@@ -9,9 +9,11 @@ package pt.up.fe.rvau.euromatch.jutils;
 import java.util.List;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDMatch;
+import org.opencv.core.MatOfKeyPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.features2d.DMatch;
+import org.opencv.features2d.KeyPoint;
 
 /**
  *
@@ -27,6 +29,10 @@ public class MatConverter {
     public static MatOfPoint2f convertToMatOfPoint2f(List<Point> src) {
         return new MatOfPoint2f(src.toArray(new Point[src.size()]));
     }
+	
+	public static MatOfKeyPoint convertToMatOfKeyPoint(List<KeyPoint> src) {
+		return new MatOfKeyPoint(src.toArray(new KeyPoint[src.size()]));
+	}
     
     public static Mat convertToMatOfType(List<Point> points, int cvType) {
         Mat mat = new Mat(4, 1, cvType);
@@ -37,7 +43,7 @@ public class MatConverter {
         return mat;
     }
     
-    public static List<Point> toPointList(Mat cornersInSceneMat) {
-        return new MatOfPoint2f(cornersInSceneMat).toList();
+    public static List<Point> toPointList(Mat srcMat) {
+        return new MatOfPoint2f(srcMat).toList();
     }
 }
