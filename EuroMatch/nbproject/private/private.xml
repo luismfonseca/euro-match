@@ -3,9 +3,12 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/luiscubal/Documents/NetBeansProjects/rvau-notas/EuroMatch/src/pt/up/fe/rvau/euromatch/DetectedBill.java</file>
-            <file>file:/C:/Users/luiscubal/Documents/NetBeansProjects/rvau-notas/EuroMatch/src/pt/up/fe/rvau/euromatch/BillInfo.java</file>
+            <file>file:/C:/Users/luiscubal/Documents/NetBeansProjects/rvau-notas/EuroMatch/bills/20eu_r.json</file>
+            <file>file:/C:/Users/luiscubal/Documents/NetBeansProjects/rvau-notas/EuroMatch/bills/20eu_r.jpg</file>
+            <file>file:/C:/Users/luiscubal/Documents/NetBeansProjects/rvau-notas/EuroMatch/src/pt/up/fe/rvau/euromatch/ui/AlgorithmPicker.java</file>
             <file>file:/C:/Users/luiscubal/Documents/NetBeansProjects/rvau-notas/EuroMatch/src/pt/up/fe/rvau/euromatch/EuroMatch.java</file>
+            <file>file:/C:/Users/luiscubal/Documents/NetBeansProjects/rvau-notas/EuroMatch/src/pt/up/fe/rvau/euromatch/ui/AlgorithmRenderer.java</file>
+            <file>file:/C:/Users/luiscubal/Documents/NetBeansProjects/rvau-notas/EuroMatch/src/pt/up/fe/rvau/euromatch/jutils/VisualHelper.java</file>
         </group>
     </open-files>
 </project-private>

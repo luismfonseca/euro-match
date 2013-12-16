@@ -6,6 +6,7 @@
 
 package pt.up.fe.rvau.euromatch.ui;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.DefaultComboBoxModel;
@@ -15,7 +16,12 @@ import org.opencv.core.Mat;
 import org.opencv.highgui.Highgui;
 import org.opencv.highgui.VideoCapture;
 import org.opencv.video.Video;
+import pt.up.fe.rvau.euromatch.BillDetector;
+import pt.up.fe.rvau.euromatch.DetectedBill;
+import pt.up.fe.rvau.euromatch.DetectedBillsResult;
 import pt.up.fe.rvau.euromatch.EuroMatch;
+import pt.up.fe.rvau.euromatch.jutils.ImageConverter;
+import pt.up.fe.rvau.euromatch.jutils.VisualHelper;
 
 /**
  *
@@ -49,7 +55,6 @@ public class AlgorithmPicker extends javax.swing.JFrame {
         jTextField1 = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
-        jLabel5 = new javax.swing.JLabel();
         jButton3 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -89,8 +94,6 @@ public class AlgorithmPicker extends javax.swing.JFrame {
             }
         });
 
-        jLabel5.setText("Load from webcam");
-
         jButton3.setText("Use webcam");
         jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -107,17 +110,17 @@ public class AlgorithmPicker extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jButton3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel2)
                             .addComponent(jLabel4)
                             .addComponent(jLabel3)
-                            .addComponent(jLabel1)
-                            .addComponent(jLabel5))
+                            .addComponent(jLabel1))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jComboBox1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jComboBox2, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jComboBox3, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -147,12 +150,10 @@ public class AlgorithmPicker extends javax.swing.JFrame {
                     .addComponent(jLabel4)
                     .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButton1))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 42, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel5)
+                    .addComponent(jButton2)
                     .addComponent(jButton3))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 13, Short.MAX_VALUE)
-                .addComponent(jButton2)
                 .addContainerGap())
         );
 
@@ -168,30 +169,26 @@ public class AlgorithmPicker extends javax.swing.JFrame {
 		}
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-		EuroMatch.performDetection(jTextField1.getText(),
-				"",
+	private BillDetector createBillDetector() {
+		return new BillDetector(
 				(int)jComboBox1.getSelectedItem(),
 				(int)jComboBox2.getSelectedItem(),
 				(int)jComboBox3.getSelectedItem());
+	}
+	
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+		BillDetector billDetector = createBillDetector();
+		DetectedBillsResult result = billDetector.performDetection(jTextField1.getText());
+		try {
+			BufferedImage image = ImageConverter.convert(result.outputImage, 600, 500);
+			VisualHelper.showImageFrame(image, result.totalValue);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        try {
-			VideoCapture videoCapture = new VideoCapture(0);
-			Mat image = new Mat();
-			if (videoCapture.retrieve(image)) {
-				File file = File.createTempFile("euromatch", ".png");
-				Highgui.imwrite(file.getAbsolutePath(), image);
-				
-				jTextField1.setText(file.getAbsolutePath());
-				jButton2.setEnabled(true);
-			} else {
-				JOptionPane.showMessageDialog(this, "Could not take image");
-			}
-		} catch (IOException e) {
-			JOptionPane.showMessageDialog(this, "Error saving image file");
-		}
+       new WebCamBillDetectorViewer(this, true, createBillDetector()).setVisible(true);
     }//GEN-LAST:event_jButton3ActionPerformed
 
 	/**
@@ -240,7 +237,6 @@ public class AlgorithmPicker extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
     private javax.swing.JTextField jTextField1;
     // End of variables declaration//GEN-END:variables
 }
