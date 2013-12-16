@@ -47,60 +47,61 @@ public class EuroMatch {
 	private static final int RANSAC_THRESHOLD = 3;
 	private static final String RESULT_FOLDER = "./results/";
 	
-	static long endTime;
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        System.out.println("Starting");
-		
-		String imageFiles[] = new String[] { "scenes.png", "scenesx.png", "scenesy20r.png",  "scenesy50r.png"};
-		int featureDetectors[] = new int [] {
+	public static final Integer[] FEATURE_DETECTORS = new Integer [] {
 			FeatureDetector.SURF, FeatureDetector.DYNAMIC_SURF,
 			FeatureDetector.FAST, FeatureDetector.BRISK,
 			FeatureDetector.SIFT
 		};
-		String featureDetectorsString[] = new String [] {
+	public static final String[] FEATURE_DETECTORS_STRING = new String [] {
 			"FeatureDetector.SURF", "FeatureDetector.DYNAMIC_SURF",
 			"FeatureDetector.FAST", "FeatureDetector.BRISK",
 			"FeatureDetector.SIFT"
 		};
-		int descriptorExtractors[] = new int [] {
+	public static final Integer[] DESCRIPTOR_EXTRACTORS = new Integer [] {
 			DescriptorExtractor.SURF, DescriptorExtractor.BRIEF,
 			DescriptorExtractor.BRISK, DescriptorExtractor.FREAK,
 			DescriptorExtractor.ORB, DescriptorExtractor.SIFT,
 			DescriptorExtractor.OPPONENT_SURF
 		};
-		String descriptorExtractorsString[] = new String [] {
+	public static final String[] DESCRIPTOR_EXTRACTORS_STRING = new String [] {
 			"DescriptorExtractor.SURF", "DescriptorExtractor.BRIEF",
 			"DescriptorExtractor.BRISK", "DescriptorExtractor.FREAK",
 			"DescriptorExtractor.ORB", "DescriptorExtractor.SIFT",
 			"DescriptorExtractor.OPPONENT_SURF"
 		};
-		int descriptorMatchers[] = new int [] {
+	public static final Integer[] DESCRIPTOR_MATCHERS = new Integer [] {
 			DescriptorMatcher.BRUTEFORCE,
 			DescriptorMatcher.FLANNBASED
 		};
-		String descriptorMatchersString[] = new String [] {
+	public static final String[] DESCRIPTOR_MATCHERS_STRING = new String [] {
 			"DescriptorMatcher.BRUTEFORCE",
 			"DescriptorMatcher.FLANNBASED"
 		};
+	
+	static long endTime;
+    /**
+     * @param args the command line arguments
+     */
+    public static void xmain(String[] args) {
+        System.out.println("Starting");
 		
-		for (int d = 0; d < featureDetectors.length; ++d)
+		String imageFiles[] = new String[] { "scenes.png", "scenesx.png", "scenesy20r.png",  "scenesy50r.png"};
+		
+		for (int d = 0; d < FEATURE_DETECTORS.length; ++d)
 		{
-			for (int e = 0; e < descriptorExtractors.length; ++e)
+			for (int e = 0; e < DESCRIPTOR_EXTRACTORS.length; ++e)
 			{
-				for (int m = 0; m < descriptorMatchers.length; ++m)
+				for (int m = 0; m < DESCRIPTOR_MATCHERS.length; ++m)
 				{
 					for (String imageFileName : imageFiles)
 					{
-						int featureDetector = featureDetectors[d];
-						int descriptorExtractor = descriptorExtractors[e];
-						int descriptorMatcher = descriptorMatchers[m];
+						int featureDetector = FEATURE_DETECTORS[d];
+						int descriptorExtractor = DESCRIPTOR_EXTRACTORS[e];
+						int descriptorMatcher = DESCRIPTOR_MATCHERS[m];
 						String algorithmsCombination =
-								featureDetectorsString[d] + "-" +
-								descriptorExtractorsString[e] + "-" +
-								descriptorMatchersString[m];
+								FEATURE_DETECTORS_STRING[d] + "-" +
+								DESCRIPTOR_EXTRACTORS_STRING[e] + "-" +
+								DESCRIPTOR_MATCHERS_STRING[m];
 						try {
 							testPerformDetection(imageFileName, algorithmsCombination, featureDetector, descriptorExtractor, descriptorMatcher);
 						} catch(Exception ex)
@@ -156,24 +157,24 @@ public class EuroMatch {
 				billInfo, scene, featureDetector, extractor, matcher);
 		
 		
-		//int totalValue = 0;
+		int totalValue = 0;
         for (int i = 0; i < detectedBills.size(); ++i) {
 			DetectedBill detectedBill = detectedBills.get(i);
 			drawBill(outputImage, detectedBill, 0, getColorForIndex(i));
 			//System.out.println("Bill: " + detectedBill.getValue());
-			//totalValue += detectedBill.getValue();
+			totalValue += detectedBill.getValue();
 		}
 		//System.out.println("Matched " + detectedBills.size() + " bills");
 		//System.out.println("Total Value: " + totalValue);/**/
 		
 		endTime = System.nanoTime();
 		
-		Highgui.imwrite(RESULT_FOLDER + name + '.' + algorithmsCombination + ".result.jpg", outputImage);
-        /*try {
-            VisualHelper.showImageFrame(ImageConverter.convert(outputImage, 640, 480));
+		//Highgui.imwrite(RESULT_FOLDER + name + '.' + algorithmsCombination + ".result.jpg", outputImage);
+        try {
+            VisualHelper.showImageFrame(ImageConverter.convert(outputImage, 640, 480), totalValue);
         } catch (IOException e) {
             e.printStackTrace();
-        }/**/
+        }
 		return detectedBills;
     }
 
