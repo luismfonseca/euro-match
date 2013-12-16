@@ -176,6 +176,7 @@ public class BillDetector {
 					}
 				}
 
+                // limiting minDistance so we don't have a perfect match that difficults others possible matches
 				if (minDistance < 1e-4) {
 					minDistance = 0.001f;
 				}
@@ -206,6 +207,7 @@ public class BillDetector {
 				
 				if (scenePoints.size() < 4)
 					break;
+                
 				Mat homography = Calib3d.findHomography(objPointsMat, scenePointsMat, Calib3d.RANSAC, RANSAC_THRESHOLD);
 				List<Point> cornersInObject = new ArrayList<>();
 				cornersInObject.add(new Point(0, 0));
