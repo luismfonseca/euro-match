@@ -79,7 +79,7 @@ public class WebCamBillDetectorViewer extends javax.swing.JDialog {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-        jLabel1.setText("jLabel1");
+        jLabel1.setText("Loading...");
         jLabel1.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         getContentPane().add(jLabel1, java.awt.BorderLayout.NORTH);
         getContentPane().add(jLabel2, java.awt.BorderLayout.CENTER);

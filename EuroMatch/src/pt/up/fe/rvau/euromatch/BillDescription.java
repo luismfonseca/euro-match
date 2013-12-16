@@ -1,14 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package pt.up.fe.rvau.euromatch;
 
 /**
  *
- * @author luiscubal
+ * This class represent a bill and the relevant parts in it.
+ * The relevant parts are composed by 4 values that represent a 2 points with x and y.
+ * @author luiscubal, luisfonseca
  */
 public class BillDescription {
 	public int value;

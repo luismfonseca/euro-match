@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package pt.up.fe.rvau.euromatch.jutils;
 
 import java.util.List;
@@ -16,8 +10,8 @@ import org.opencv.features2d.DMatch;
 import org.opencv.features2d.KeyPoint;
 
 /**
- *
- * @author luiscubal
+ * This is an auxiliary to help with the Java bindings with OpenCV.
+ * @author luiscubal, luisfonseca
  */
 public class MatConverter {
     private MatConverter() {}

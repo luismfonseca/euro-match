@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package pt.up.fe.rvau.euromatch;
 
 import com.google.gson.Gson;
@@ -31,23 +25,21 @@ import org.opencv.features2d.Features2d;
 import org.opencv.features2d.KeyPoint;
 import org.opencv.highgui.Highgui;
 import org.opencv.imgproc.Imgproc;
-import pt.up.fe.rvau.euromatch.jutils.ImageConverter;
 import pt.up.fe.rvau.euromatch.jutils.MatConverter;
 import pt.up.fe.rvau.euromatch.jutils.PointUtils;
-import pt.up.fe.rvau.euromatch.jutils.VisualHelper;
 
 /**
- *
- * @author luiscubal
+ * BillDetector class is used to perform bills detection in a image.
+ * @author luiscubal, luisfonseca
  */
 public class BillDetector {
 	private static final int IMAGE_FORMAT = Highgui.CV_LOAD_IMAGE_COLOR;
 	private static final int RANSAC_THRESHOLD = 3;
 	
-	private FeatureDetector featureDetector;
-	private DescriptorExtractor extractor;
-	private DescriptorMatcher matcher;
-	private List<BillInfo> billInfo;
+	private final FeatureDetector featureDetector;
+	private final DescriptorExtractor extractor;
+	private final DescriptorMatcher matcher;
+	private final List<BillInfo> billInfo;
 	
 	public BillDetector(
 			int featureDetectorType,
@@ -61,11 +53,13 @@ public class BillDetector {
 		billInfo = loadBills(featureDetector, extractor);
 	}
 	
+    // Perform a dection from file.
 	public DetectedBillsResult performDetection(String filename) {
 		Mat scene = Highgui.imread(filename, IMAGE_FORMAT);
 		return performDetection(scene);
 	}
 	
+    // Perform a dection from mat.
 	public DetectedBillsResult performDetection(Mat scene) {
 		Mat outputImage = scene.clone();
 		
@@ -89,11 +83,10 @@ public class BillDetector {
 		return result;
     }
 
+    // Load bills files
 	private List<BillInfo> loadBills(FeatureDetector featureDetector,
 			DescriptorExtractor extractor) {
 		List<BillInfo> billInfo = new ArrayList<>();
-		//billInfo.add(loadBill(featureDetector, extractor, "5eu_r.jpg", 5,
-				//new int[] { 184, 3, 230, 70 }));
 		
 		Gson gson = new Gson();
 		File folder = new File("./bills");
@@ -250,6 +243,8 @@ public class BillDetector {
 		return detectedBills;
 	}
 	
+    // Remove keypoints used to get a match with a bill
+    // Only the keypoints in the relevant area of the bill will be removed
 	private void removeUsedKeypoints(
 			List<KeyPoint> keyPoints,
 			List<KeyPoint> keyPointSink,
@@ -329,7 +324,7 @@ public class BillDetector {
 	}
     
 	
-
+    // A valid buill means the angles must never be higher than pi, or 180º
 	private boolean isBillValid(List<Point> points) {
 		final double EPSILON = 0.1;
 		

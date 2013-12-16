@@ -4,8 +4,9 @@ import java.util.List;
 import org.opencv.core.Mat;
 
 /**
- *
- * @author luiscubal
+ * This class holds the result of testing to match notes to an image.
+ * It contains a list of detected bills, resulting image, total value and the elapsed time.
+ * @author luiscubal, luisfonseca
  */
 public class DetectedBillsResult {
 	public List<DetectedBill> detectedBills;

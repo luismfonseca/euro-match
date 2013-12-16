@@ -14,8 +14,8 @@ import org.opencv.features2d.FeatureDetector;
 import org.opencv.highgui.Highgui;
 
 /**
- *
- * @author luiscubal
+ * This class is used for testing and performing bills matching.
+ * @author luiscubal, luisfonseca
  */
 public class EuroMatch {
     static {

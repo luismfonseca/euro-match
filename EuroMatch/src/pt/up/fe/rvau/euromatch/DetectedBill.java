@@ -7,7 +7,7 @@ import org.opencv.core.Point;
 
 /**
  *
- * @author luiscubal
+ * @author luiscubal, luisfonseca
  */
 public class DetectedBill {
 	private final BillInfo billInfo;

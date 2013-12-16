@@ -3,15 +3,9 @@ package pt.up.fe.rvau.euromatch.jutils;
 
 import org.opencv.core.Point;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /**
  *
- * @author luiscubal
+ * @author luiscubal, luisfonseca
  */
 public class PointUtils {
     private PointUtils() {}

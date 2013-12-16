@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package pt.up.fe.rvau.euromatch.jutils;
 
 import java.awt.image.BufferedImage;
@@ -18,8 +12,8 @@ import org.opencv.highgui.Highgui;
 import org.opencv.imgproc.Imgproc;
 
 /**
- *
- * @author luiscubal
+ * This is an auxiliary to help with the Java bindings with OpenCV.
+ * @author luiscubal, luisfonseca
  */
 public class ImageConverter {
     private ImageConverter() {}
