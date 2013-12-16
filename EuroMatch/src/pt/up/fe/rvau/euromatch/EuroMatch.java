@@ -1,7 +1,15 @@
 package pt.up.fe.rvau.euromatch;
 
+import com.google.gson.Gson;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import pt.up.fe.rvau.euromatch.jutils.PointUtils;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -36,18 +44,110 @@ public class EuroMatch {
     }
     
 	private static final int IMAGE_FORMAT = Highgui.CV_LOAD_IMAGE_COLOR;
+	private static final int RANSAC_THRESHOLD = 3;
+	private static final String RESULT_FOLDER = "./results/";
 	
+	static long endTime;
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
         System.out.println("Starting");
-        
-        Mat scene = Highgui.imread("scenes.png", IMAGE_FORMAT);
-        
-        FeatureDetector featureDetector = FeatureDetector.create(FeatureDetector.DYNAMIC_SURF);
-		DescriptorExtractor extractor = DescriptorExtractor.create(DescriptorExtractor.SURF);
-		DescriptorMatcher matcher = DescriptorMatcher.create(DescriptorMatcher.FLANNBASED);
+		
+		String imageFiles[] = new String[] { "scenes.png", "scenesx.png", "scenesy20r.png",  "scenesy50r.png"};
+		int featureDetectors[] = new int [] {
+			FeatureDetector.SURF, FeatureDetector.DYNAMIC_SURF,
+			FeatureDetector.FAST, FeatureDetector.BRISK,
+			FeatureDetector.SIFT
+		};
+		String featureDetectorsString[] = new String [] {
+			"FeatureDetector.SURF", "FeatureDetector.DYNAMIC_SURF",
+			"FeatureDetector.FAST", "FeatureDetector.BRISK",
+			"FeatureDetector.SIFT"
+		};
+		int descriptorExtractors[] = new int [] {
+			DescriptorExtractor.SURF, DescriptorExtractor.BRIEF,
+			DescriptorExtractor.BRISK, DescriptorExtractor.FREAK,
+			DescriptorExtractor.ORB, DescriptorExtractor.SIFT,
+			DescriptorExtractor.OPPONENT_SURF
+		};
+		String descriptorExtractorsString[] = new String [] {
+			"DescriptorExtractor.SURF", "DescriptorExtractor.BRIEF",
+			"DescriptorExtractor.BRISK", "DescriptorExtractor.FREAK",
+			"DescriptorExtractor.ORB", "DescriptorExtractor.SIFT",
+			"DescriptorExtractor.OPPONENT_SURF"
+		};
+		int descriptorMatchers[] = new int [] {
+			DescriptorMatcher.BRUTEFORCE,
+			DescriptorMatcher.FLANNBASED
+		};
+		String descriptorMatchersString[] = new String [] {
+			"DescriptorMatcher.BRUTEFORCE",
+			"DescriptorMatcher.FLANNBASED"
+		};
+		
+		for (int d = 0; d < featureDetectors.length; ++d)
+		{
+			for (int e = 0; e < descriptorExtractors.length; ++e)
+			{
+				for (int m = 0; m < descriptorMatchers.length; ++m)
+				{
+					for (String imageFileName : imageFiles)
+					{
+						int featureDetector = featureDetectors[d];
+						int descriptorExtractor = descriptorExtractors[e];
+						int descriptorMatcher = descriptorMatchers[m];
+						String algorithmsCombination =
+								featureDetectorsString[d] + "-" +
+								descriptorExtractorsString[e] + "-" +
+								descriptorMatchersString[m];
+						try {
+							testPerformDetection(imageFileName, algorithmsCombination, featureDetector, descriptorExtractor, descriptorMatcher);
+						} catch(Exception ex)
+						{
+							System.out.println("Error: " + ex.getMessage());
+							ex.printStackTrace();
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	public static void testPerformDetection(
+			String imageFileName, String algorithmsCombination, int featureDetector, int descriptorExtractor, int descriptorMatcher)
+	{
+		long startTime = System.nanoTime();
+		List<DetectedBill> detectedBills =
+				performDetection(imageFileName, algorithmsCombination, featureDetector, descriptorExtractor, descriptorMatcher);
+
+		double elapsedTime = (endTime - startTime) / 1000000000.0;
+		String textResultFilename = RESULT_FOLDER + imageFileName + '.' + algorithmsCombination + ".result.txt";
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(textResultFilename)))
+		{
+			int totalValue = 0;
+			for (int i = 0; i < detectedBills.size(); ++i) {
+				DetectedBill detectedBill = detectedBills.get(i);
+				writer.write("Bill: " + detectedBill.getValue() + "\r\n");
+				totalValue += detectedBill.getValue();
+			}
+			writer.write("Matched " + detectedBills.size() + " bills" + "\r\n");
+			writer.write("Total Value: " + totalValue + "\r\n");
+			writer.write("Total Elapsed Time: " + elapsedTime + "\r\n");
+		} catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+	public static List<DetectedBill> performDetection(
+			String name, String algorithmsCombination,
+			int featureDetectorType, int descriptorExtractorType, int descriptorMatcherType) {
+        Mat scene = Highgui.imread(name, IMAGE_FORMAT);
+		
+        FeatureDetector featureDetector = FeatureDetector.create(featureDetectorType);
+		DescriptorExtractor extractor = DescriptorExtractor.create(descriptorExtractorType);
+		DescriptorMatcher matcher = DescriptorMatcher.create(descriptorMatcherType);
 		
 		List<BillInfo> billInfo = loadBills(featureDetector, extractor);
 		
@@ -55,58 +155,54 @@ public class EuroMatch {
 		List<DetectedBill> detectedBills = detectBills(outputImage,
 				billInfo, scene, featureDetector, extractor, matcher);
 		
-		int totalValue = 0;
+		
+		//int totalValue = 0;
         for (int i = 0; i < detectedBills.size(); ++i) {
 			DetectedBill detectedBill = detectedBills.get(i);
 			drawBill(outputImage, detectedBill, 0, getColorForIndex(i));
-			System.out.println("Bill: " + detectedBill.getValue());
-			totalValue += detectedBill.getValue();
+			//System.out.println("Bill: " + detectedBill.getValue());
+			//totalValue += detectedBill.getValue();
 		}
-		System.out.println("Matched " + detectedBills.size() + " bills");
-		System.out.println("Total Value: " + totalValue);
+		//System.out.println("Matched " + detectedBills.size() + " bills");
+		//System.out.println("Total Value: " + totalValue);/**/
 		
-        try {
+		endTime = System.nanoTime();
+		
+		Highgui.imwrite(RESULT_FOLDER + name + '.' + algorithmsCombination + ".result.jpg", outputImage);
+        /*try {
             VisualHelper.showImageFrame(ImageConverter.convert(outputImage, 640, 480));
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }/**/
+		return detectedBills;
     }
 
 	private static List<BillInfo> loadBills(FeatureDetector featureDetector,
 			DescriptorExtractor extractor) {
 		List<BillInfo> billInfo = new ArrayList<>();
-		billInfo.add(loadBill(featureDetector, extractor, "5eu_r.jpg", 5,
-				new int[] { 184, 3, 230, 70 }));
-		billInfo.add(loadBill(featureDetector, extractor, "5eu_v.jpg", 5,
-				new int[] { 207, 104, 264, 137,
-							64, 37, 70, 141,
-							5, 8, 35, 32,
-							40, 40, 78, 72}));
-		billInfo.add(loadBill(featureDetector, extractor, "10eu_r.jpg", 10,
-				new int[] { 164, 3, 260, 60,
-							3, 103, 97, 141,
-							0, 0, 63, 32}));
-		billInfo.add(loadBill(featureDetector, extractor, "10eu_v.jpg", 10,
-				new int[] { 164, 3, 260, 60,
-							3, 103, 97, 141,
-							0, 0, 63, 32}));
-		billInfo.add(loadBill(featureDetector, extractor, "20eu_r.jpg", 20,
-				new int[] { 138, 3, 264, 60,
-							5, 107, 37, 135,
-							0, 0, 30, 30,
-							135, 53, 178, 90}));
-		billInfo.add(loadBill(featureDetector, extractor, "20eu_v.jpg", 20,
-				new int[] { 204, 116, 264, 143,
-							3, 113, 77, 141,
-							0, 0, 90, 64,
-							230, 0, 260, 30}));
-		billInfo.add(loadBill(featureDetector, extractor, "50eu_r.jpg", 50,
-				new int[] { 222, 78, 258, 116,
-							164, 4, 230, 55,
-							0, 113, 77, 141}));
-		billInfo.add(loadBill(featureDetector, extractor, "50eu_v.jpg", 50,
-				new int[] { 214, 107, 260, 145,
-							0, 114, 85, 146}));
+		//billInfo.add(loadBill(featureDetector, extractor, "5eu_r.jpg", 5,
+				//new int[] { 184, 3, 230, 70 }));
+		
+		Gson gson = new Gson();
+		File folder = new File("./bills");
+		for (File file : folder.listFiles()) {
+			if (!file.getName().endsWith(".json"))
+				continue;
+			
+			String jsonFileName = file.getAbsolutePath();
+			String imageFileName = jsonFileName.substring(0, jsonFileName.length() - ".json".length()) + ".jpg";
+			
+			try (Reader reader = new FileReader(jsonFileName)) {
+				BillDescription description = gson.fromJson(reader, BillDescription.class);
+				
+				billInfo.add(loadBill(featureDetector, extractor, imageFileName,
+						description.value,
+						description.relevant_parts));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
 		return billInfo;
 	}
 	
@@ -124,6 +220,7 @@ public class EuroMatch {
 		MatOfKeyPoint objectKeypoints = new MatOfKeyPoint();
         featureDetector.detect(billInfo.getBillImage(), objectKeypoints);
 		billInfo.setKeyPoints(objectKeypoints, relevantParts);
+		
 		Mat objectDescriptor = new Mat();
 		extractor.compute(billInfo.getBillImage(), billInfo.getKeyPoints(), objectDescriptor);
 		billInfo.setDescriptor(objectDescriptor);
@@ -155,6 +252,8 @@ public class EuroMatch {
 			System.out.println("Testing " + billInfo.getValue());
 			for (int billIndex = 0;;++billIndex) {
 
+				//Features2d.drawKeypoints(scene, sceneKeypoints, outImage);
+				
 				Mat sceneDescriptor = new Mat();
 				extractor.compute(scene, sceneKeypoints, sceneDescriptor);
 
@@ -172,6 +271,9 @@ public class EuroMatch {
 					}
 				}
 
+				if (minDistance < 1e-4) {
+					minDistance = 0.001f;
+				}
 				System.out.println("Min: " + minDistance);
 				System.out.println("Max: " + maxDistance);
 				
@@ -199,7 +301,7 @@ public class EuroMatch {
 				
 				if (scenePoints.size() < 4)
 					break;
-				Mat homography = Calib3d.findHomography(objPointsMat, scenePointsMat, Calib3d.RANSAC, 3);
+				Mat homography = Calib3d.findHomography(objPointsMat, scenePointsMat, Calib3d.RANSAC, RANSAC_THRESHOLD);
 				List<Point> cornersInObject = new ArrayList<>();
 				cornersInObject.add(new Point(0, 0));
 				cornersInObject.add(new Point(billInfo.getImageWidth(), 0));
@@ -216,10 +318,10 @@ public class EuroMatch {
 					break;
 				}
 				
-				DetectedBill detectedBill = new DetectedBill(billInfo.getValue(), cornersInScene);
+				DetectedBill detectedBill = new DetectedBill(billInfo, cornersInScene);
 
 				List<KeyPoint> removedKeyPoints = new ArrayList<>();
-				removeUsedKeypoints(sceneKeypointsList, removedKeyPoints, detectedBill);
+				removeUsedKeypoints(sceneKeypointsList, removedKeyPoints, detectedBill, homography);
 				int removedPoints = removedKeyPoints.size();
 				System.out.println("Removed " + removedPoints);
 				if (removedPoints > 10) {
@@ -239,7 +341,8 @@ public class EuroMatch {
 	private static void removeUsedKeypoints(
 			List<KeyPoint> keyPoints,
 			List<KeyPoint> keyPointSink,
-			DetectedBill detectedBill)
+			DetectedBill detectedBill,
+			Mat homography)
 	{
 		
 		MatOfPoint2f contour = MatConverter.convertToMatOfPoint2f(detectedBill.getPoints());
@@ -249,10 +352,39 @@ public class EuroMatch {
 			Point point = keyPoint.pt;
 			if (Imgproc.pointPolygonTest(contour, point, false) > 0) {
 				//Point contained in object
-				keyPointSink.add(keyPoint);
-				it.remove();
+				if (isPointInRelevantArea(point, detectedBill, homography)) {
+					keyPointSink.add(keyPoint);
+					it.remove();
+				}
 			}
 		}
+	}
+	
+	private static boolean isPointInRelevantArea(Point point, DetectedBill detectedBill, Mat homography) {
+		BillInfo billInfo = detectedBill.getBillInfo();
+		List<Point> relevantPoints = billInfo.getRelevantPoints();
+		for (int i = 0; i < relevantPoints.size(); i += 2) {
+			List<Point> srcPoints = new ArrayList<Point>();
+			Point p1 = relevantPoints.get(i);
+			Point p3 = relevantPoints.get(i + 1);
+			
+			Point p2 = new Point(p1.x, p3.y);
+			Point p4 = new Point(p3.x, p1.y);
+			
+			srcPoints.add(p1);
+			srcPoints.add(p2);
+			srcPoints.add(p3);
+			srcPoints.add(p4);
+			
+			MatOfPoint2f pointsMat = MatConverter.convertToMatOfPoint2f(srcPoints);
+			MatOfPoint2f destPoints = new MatOfPoint2f();
+			Core.perspectiveTransform(pointsMat, destPoints, homography);
+			
+			if (Imgproc.pointPolygonTest(destPoints, point, false) >= 0) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	private static void drawBill(Mat outputImage, DetectedBill detectedBill, int offset, Scalar color) {
@@ -285,7 +417,7 @@ public class EuroMatch {
 	}
     
 	private static Scalar getColorForIndex(int i) {
-		switch (i) {
+		switch (i % 8) {
 			case 0: return new Scalar(255, 0, 0); //Blue
 			case 1: return new Scalar(0, 255, 0); //Green
 			case 2: return new Scalar(0, 0, 255); //Red

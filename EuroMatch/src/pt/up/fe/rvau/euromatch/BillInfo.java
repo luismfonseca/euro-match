@@ -23,6 +23,7 @@ public class BillInfo {
 	private Mat billImage;
 	private MatOfKeyPoint keyPoints;
 	private Mat descriptor;
+	private int[] relevantParts;
 	
 	public BillInfo(Mat billImage, int value) {
 		this.billImage = billImage;
@@ -55,6 +56,7 @@ public class BillInfo {
 			}
 		}
 		
+		this.relevantParts = relevantParts;
 		this.keyPoints = MatConverter.convertToMatOfKeyPoint(validKeyPoints);
 	}
 	
@@ -82,5 +84,15 @@ public class BillInfo {
 			}
 		}
 		return false;
+	}
+	
+	public List<Point> getRelevantPoints() {
+		List<Point> points = new ArrayList<>();
+		
+		for (int i = 0; i < relevantParts.length; i += 2) {
+			points.add(new Point(relevantParts[i], relevantParts[i + 1]));
+		}
+		
+		return points;
 	}
 }

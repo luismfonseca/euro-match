@@ -10,22 +10,26 @@ import org.opencv.core.Point;
  * @author luiscubal
  */
 public class DetectedBill {
-	private final int value;
+	private final BillInfo billInfo;
 	private final List<Point> points;
 	
-	public DetectedBill(int value, List<Point> points) {
+	public DetectedBill(BillInfo billInfo, List<Point> points) {
 		if (points == null) {
 			throw new IllegalArgumentException("points must not be null");
 		}
 		if (points.size() != 4) {
 			throw new IllegalArgumentException("points must have size 4");
 		}
-		this.value = value;
+		this.billInfo = billInfo;
 		this.points = new ArrayList<>(points);
 	}
 	
 	public int getValue() {
-		return value;
+		return billInfo.getValue();
+	}
+	
+	public BillInfo getBillInfo() {
+		return billInfo;
 	}
 	
 	public List<Point> getPoints() {
